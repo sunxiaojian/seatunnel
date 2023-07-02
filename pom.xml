@@ -143,7 +143,6 @@
         <awaitility.version>4.2.0</awaitility.version>
         <e2e.dependency.skip>true</e2e.dependency.skip>
         <skip.spotless>false</skip.spotless>
-
     </properties>
 
     <dependencyManagement>
