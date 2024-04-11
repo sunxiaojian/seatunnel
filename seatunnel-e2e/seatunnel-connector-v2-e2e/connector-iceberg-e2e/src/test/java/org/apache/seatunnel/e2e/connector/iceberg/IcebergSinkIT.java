@@ -34,6 +34,7 @@ import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.CloseableIterable;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -137,6 +138,11 @@ public class IcebergSinkIT extends TestSuiteBase {
                             container.executeExtraCommands(containerExtendedFactory);
                             Assertions.assertEquals(100, loadIcebergTable().size());
                         });
+    }
+
+    @AfterAll
+    public void tearDown() throws Exception {
+        FileUtils.deleteFile(CATALOG_DIR);
     }
 
     private List<Record> loadIcebergTable() {

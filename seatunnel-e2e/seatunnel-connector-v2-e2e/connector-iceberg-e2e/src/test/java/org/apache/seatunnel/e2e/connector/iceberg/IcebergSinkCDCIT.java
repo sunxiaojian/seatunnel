@@ -373,6 +373,7 @@ public class IcebergSinkCDCIT extends TestSuiteBase implements TestResource {
         if (MYSQL_CONTAINER != null) {
             MYSQL_CONTAINER.close();
         }
+        FileUtils.deleteFile(CATALOG_DIR);
     }
 
     private void initSourceTableData(String database, String tableName) {
