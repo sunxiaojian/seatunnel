@@ -38,6 +38,13 @@ import static org.apache.seatunnel.connectors.seatunnel.iceberg.source.enumerato
 public class SourceConfig extends CommonConfig {
     private static final long serialVersionUID = -1965861967575264253L;
 
+    public static final Option<Long> READ_BRANCH =
+            Options.key("read_branch")
+                    .longType()
+                    .noDefaultValue()
+                    .withDescription("The iceberg branch to be read.");
+
+
     public static final Option<Long> KEY_START_SNAPSHOT_TIMESTAMP =
             Options.key("start_snapshot_timestamp")
                     .longType()
@@ -81,6 +88,8 @@ public class SourceConfig extends CommonConfig {
     private Long useSnapshotId;
     private Long useSnapshotTimestamp;
 
+    private String branch;
+
     private IcebergStreamScanStrategy streamScanStrategy = KEY_STREAM_SCAN_STRATEGY.defaultValue();
     private Expression filter;
     private Long splitSize;
@@ -109,6 +118,10 @@ public class SourceConfig extends CommonConfig {
             this.streamScanStrategy =
                     pluginConfig.getEnum(
                             IcebergStreamScanStrategy.class, KEY_STREAM_SCAN_STRATEGY.key());
+        }
+        // config read branch
+        if (pluginConfig.hasPath(READ_BRANCH.key())) {
+            this.branch = pluginConfig.getString(READ_BRANCH.key());
         }
     }
 
