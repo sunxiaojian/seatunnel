@@ -17,20 +17,33 @@
 
 package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.splitter;
 
+import org.apache.seatunnel.shade.com.google.common.collect.Lists;
+
 import org.apache.seatunnel.connectors.cdc.base.source.enumerator.splitter.ChunkSplitter;
 import org.apache.seatunnel.connectors.cdc.base.source.split.SnapshotSplit;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceConfig;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.utils.TableKeyRangeUtils;
+
+import org.tikv.common.TiSession;
+import org.tikv.common.meta.TiTableInfo;
+import org.tikv.kvproto.Coprocessor;
 
 import io.debezium.relational.TableId;
 
+import javax.annotation.Nonnull;
+
 import java.util.Collection;
+import java.util.List;
 
 public class TiDBChunkSplitter implements ChunkSplitter {
 
     private final TiDBSourceConfig sourceConfig;
 
+    private transient TiSession session;
+
     public TiDBChunkSplitter(TiDBSourceConfig sourceConfig) {
         this.sourceConfig = sourceConfig;
+        session = TiSession.create(sourceConfig.getTiConfiguration());
     }
 
     /**
@@ -40,6 +53,31 @@ public class TiDBChunkSplitter implements ChunkSplitter {
      */
     @Override
     public Collection<SnapshotSplit> generateSplits(TableId tableId) {
-        return null;
+        TiTableInfo tableInfo =
+                session.getCatalog()
+                        .getTable(sourceConfig.getDatabaseName(), sourceConfig.getTableName());
+        List<Coprocessor.KeyRange> keyRanges =
+                TableKeyRangeUtils.getTableKeyRanges(tableInfo.getId(), 10);
+        return generateSnapshotSplits(tableId, keyRanges);
+    }
+
+    private Collection<SnapshotSplit> generateSnapshotSplits(
+            TableId tableId, List<Coprocessor.KeyRange> keyRanges) {
+        List<SnapshotSplit> snapshotSplits = Lists.newArrayList();
+        for (Coprocessor.KeyRange keyRange : keyRanges) {
+            snapshotSplits.add(
+                    new SnapshotSplit(
+                            splitId(tableId, keyRange),
+                            tableId,
+                            null,
+                            new Object[] {keyRange.getStart()},
+                            new Object[] {keyRange.getEnd()}));
+        }
+        return snapshotSplits;
+    }
+
+    private String splitId(@Nonnull TableId tableId, Coprocessor.KeyRange keyRange) {
+        return String.format(
+                "%s:%s:%s", tableId.identifier(), keyRange.getStart(), keyRange.getEnd());
     }
 }
