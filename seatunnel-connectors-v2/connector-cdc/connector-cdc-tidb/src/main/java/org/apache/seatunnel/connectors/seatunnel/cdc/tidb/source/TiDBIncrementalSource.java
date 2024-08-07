@@ -27,6 +27,7 @@ import org.apache.seatunnel.connectors.cdc.base.option.StopMode;
 import org.apache.seatunnel.connectors.cdc.base.source.IncrementalSource;
 import org.apache.seatunnel.connectors.cdc.base.source.offset.OffsetFactory;
 import org.apache.seatunnel.connectors.cdc.debezium.DebeziumDeserializationSchema;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.dialect.TiDBDialect;
 
 import java.io.Serializable;
 
@@ -98,7 +99,7 @@ public class TiDBIncrementalSource extends IncrementalSource {
 
     @Override
     public DataSourceDialect createDataSourceDialect(ReadonlyConfig config) {
-        return null;
+        return new TiDBDialect();
     }
 
     @Override
