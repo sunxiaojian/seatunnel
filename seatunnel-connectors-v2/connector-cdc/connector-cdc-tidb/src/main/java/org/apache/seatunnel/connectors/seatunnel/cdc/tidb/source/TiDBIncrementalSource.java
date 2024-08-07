@@ -32,6 +32,7 @@ import org.apache.seatunnel.connectors.cdc.base.source.offset.OffsetFactory;
 import org.apache.seatunnel.connectors.cdc.debezium.DebeziumDeserializationSchema;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceConfig;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceConfigProvider;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceOptions;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.dialect.TiDBDialect;
 
 import org.tikv.common.TiConfiguration;

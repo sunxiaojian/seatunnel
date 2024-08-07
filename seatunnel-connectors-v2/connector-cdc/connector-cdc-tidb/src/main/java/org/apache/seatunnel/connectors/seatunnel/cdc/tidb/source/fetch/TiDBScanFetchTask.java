@@ -25,6 +25,8 @@ public class TiDBScanFetchTask implements FetchTask<SourceSplitBase> {
 
     private final SnapshotSplit snapshotSplit;
 
+    private volatile boolean taskRunning = false;
+
     public TiDBScanFetchTask(SnapshotSplit snapshotSplit) {
         this.snapshotSplit = snapshotSplit;
     }
@@ -34,12 +36,14 @@ public class TiDBScanFetchTask implements FetchTask<SourceSplitBase> {
      * @param context
      */
     @Override
-    public void execute(Context context) throws Exception {}
+    public void execute(Context context) throws Exception {
+        TiDBFetchTaskContext taskContext = (TiDBFetchTaskContext) context;
+    }
 
     /** Returns current task is running or not. */
     @Override
     public boolean isRunning() {
-        return false;
+        return taskRunning;
     }
 
     /** Close this task */

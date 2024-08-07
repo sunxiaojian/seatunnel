@@ -26,6 +26,9 @@ import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch.TiDBFetch
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch.TiDBScanFetchTask;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch.TiDBStreamFetchTask;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.splitter.TiDBChunkSplitter;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.utils.TableDiscoveryUtils;
+
+import org.tikv.common.TiSession;
 
 import io.debezium.relational.TableId;
 
@@ -48,7 +51,12 @@ public class TiDBDialect implements DataSourceDialect<TiDBSourceConfig> {
      */
     @Override
     public List<TableId> discoverDataCollections(TiDBSourceConfig sourceConfig) {
-        return null;
+        TiSession tiSession = getTiSession(sourceConfig);
+        return TableDiscoveryUtils.listTables(tiSession, sourceConfig);
+    }
+
+    private TiSession getTiSession(TiDBSourceConfig sourceConfig) {
+        return TiSession.create(sourceConfig.getTiConfiguration());
     }
 
     /**

@@ -19,10 +19,21 @@ package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source;
 
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.source.SeaTunnelSource;
+import org.apache.seatunnel.api.source.SourceSplit;
+import org.apache.seatunnel.api.table.catalog.CatalogTable;
+import org.apache.seatunnel.api.table.catalog.CatalogTableUtil;
+import org.apache.seatunnel.api.table.connector.TableSource;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSourceFactory;
+import org.apache.seatunnel.api.table.factory.TableSourceFactoryContext;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceOptions;
 
 import com.google.auto.service.AutoService;
+
+import java.io.Serializable;
+import java.util.List;
 
 @AutoService(Factory.class)
 public class TiDBIncrementalSourceFactory implements TableSourceFactory {
@@ -48,7 +59,19 @@ public class TiDBIncrementalSourceFactory implements TableSourceFactory {
      */
     @Override
     public OptionRule optionRule() {
-        return null;
+        return TiDBSourceOptions.getBaseRule()
+                .required(
+                        TiDBSourceOptions.DATABASE_NAME,
+                        TiDBSourceOptions.TABLE_NAME,
+                        TiDBSourceOptions.PD_ADDRESSES)
+                .optional(
+                        TiDBSourceOptions.TIKV_BATCH_GET_CONCURRENCY,
+                        TiDBSourceOptions.TIKV_BATCH_SCAN_CONCURRENCY,
+                        TiDBSourceOptions.TIKV_GRPC_SCAN_TIMEOUT,
+                        TiDBSourceOptions.TIKV_GRPC_TIMEOUT,
+                        TiDBSourceOptions.STARTUP_MODE,
+                        TiDBSourceOptions.STOP_MODE)
+                .build();
     }
 
     /**
@@ -57,6 +80,21 @@ public class TiDBIncrementalSourceFactory implements TableSourceFactory {
      */
     @Override
     public Class<? extends SeaTunnelSource> getSourceClass() {
-        return null;
+        return TiDBIncrementalSource.class;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T, SplitT extends SourceSplit, StateT extends Serializable>
+            TableSource<T, SplitT, StateT> createSource(TableSourceFactoryContext context) {
+        return () -> {
+            List<CatalogTable> catalogTables =
+                    CatalogTableUtil.getCatalogTables(
+                            context.getOptions(), context.getClassLoader());
+            SeaTunnelDataType<SeaTunnelRow> dataType =
+                    CatalogTableUtil.convertToMultipleRowType(catalogTables);
+            return (SeaTunnelSource<T, SplitT, StateT>)
+                    new TiDBIncrementalSource<>(context.getOptions(), dataType, catalogTables);
+        };
     }
 }

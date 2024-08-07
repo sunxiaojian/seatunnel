@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source;
+package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config;
 
 import org.apache.seatunnel.api.configuration.Options;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
@@ -30,7 +30,7 @@ import org.tikv.common.TiConfiguration;
 import java.util.Arrays;
 
 /** TiDB source options */
-public class TiDBSourceOptions {
+public class TiDBSourceOptions extends SourceOptions {
 
     public static final SingleChoiceOption<String> DATABASE_NAME =
             (SingleChoiceOption<String>)
