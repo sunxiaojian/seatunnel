@@ -35,9 +35,9 @@ public class TiDBSourceConfigProvider {
     public static class Builder implements SourceConfig.Factory<TiDBSourceConfig> {
         private String databaseName;
         private String tableName;
-        private String pdAddresses;
         private StartupConfig startupConfig;
         private StopConfig stopConfig;
+        private int parallelism;
         private TiConfiguration tiConfiguration;
 
         public Builder databaseName(String databaseName) {
@@ -47,11 +47,6 @@ public class TiDBSourceConfigProvider {
 
         public Builder tableName(String tableName) {
             this.tableName = tableName;
-            return this;
-        }
-
-        public Builder pdAddresses(String pdAddresses) {
-            this.pdAddresses = pdAddresses;
             return this;
         }
 
@@ -65,6 +60,11 @@ public class TiDBSourceConfigProvider {
             return this;
         }
 
+        public Builder parallelism(int parallelism) {
+            this.parallelism = parallelism;
+            return this;
+        }
+
         public Builder tiConfiguration(TiConfiguration tiConfiguration) {
             this.tiConfiguration = tiConfiguration;
             return this;
@@ -73,7 +73,6 @@ public class TiDBSourceConfigProvider {
         public Builder validate() {
             checkNotNull(databaseName, "databaseName must be provided");
             checkNotNull(tableName, "tableName must be provided");
-            checkNotNull(pdAddresses, "pdAddresses must be provided");
             checkNotNull(tiConfiguration, "tiConfiguration must be provided");
             return this;
         }
@@ -83,9 +82,9 @@ public class TiDBSourceConfigProvider {
             return new TiDBSourceConfig(
                     databaseName,
                     tableName,
-                    pdAddresses,
                     startupConfig,
                     stopConfig,
+                    parallelism,
                     tiConfiguration);
         }
     }

@@ -85,8 +85,8 @@ public class TiDBIncrementalSource<T> extends IncrementalSource<T, TiDBSourceCon
         TiConfiguration configuration =
                 TiDBSourceOptions.getTiConfiguration(
                         config.get(TiDBSourceOptions.PD_ADDRESSES), config);
-
         builder.tiConfiguration(configuration);
+        builder.parallelism(incrementalParallelism);
         return builder;
     }
 

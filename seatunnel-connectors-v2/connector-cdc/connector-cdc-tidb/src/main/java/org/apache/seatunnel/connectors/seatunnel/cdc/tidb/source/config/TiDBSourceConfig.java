@@ -33,25 +33,25 @@ public class TiDBSourceConfig implements SourceConfig {
     public TiDBSourceConfig(
             String databaseName,
             String tableName,
-            String pdAddresses,
             StartupConfig startupConfig,
             StopConfig stopConfig,
+            int parallelism,
             TiConfiguration tiConfiguration) {
 
         this.databaseName = databaseName;
         this.tableName = tableName;
-        this.pdAddresses = pdAddresses;
         this.startupConfig = startupConfig;
         this.stopConfig = stopConfig;
         this.tiConfiguration = tiConfiguration;
+        this.parallelism = parallelism;
     }
 
     private String databaseName;
     private String tableName;
-    private String pdAddresses;
     private StartupConfig startupConfig;
     private StopConfig stopConfig;
     private TiConfiguration tiConfiguration;
+    private int parallelism;
 
     @Override
     public StartupConfig getStartupConfig() {

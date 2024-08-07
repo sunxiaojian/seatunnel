@@ -57,7 +57,8 @@ public class TiDBChunkSplitter implements ChunkSplitter {
                 session.getCatalog()
                         .getTable(sourceConfig.getDatabaseName(), sourceConfig.getTableName());
         List<Coprocessor.KeyRange> keyRanges =
-                TableKeyRangeUtils.getTableKeyRanges(tableInfo.getId(), 10);
+                TableKeyRangeUtils.getTableKeyRanges(
+                        tableInfo.getId(), sourceConfig.getParallelism());
         return generateSnapshotSplits(tableId, keyRanges);
     }
 
@@ -70,8 +71,8 @@ public class TiDBChunkSplitter implements ChunkSplitter {
                             splitId(tableId, keyRange),
                             tableId,
                             null,
-                            new Object[] {keyRange.getStart()},
-                            new Object[] {keyRange.getEnd()}));
+                            new Object[] {keyRange},
+                            new Object[] {keyRange}));
         }
         return snapshotSplits;
     }
