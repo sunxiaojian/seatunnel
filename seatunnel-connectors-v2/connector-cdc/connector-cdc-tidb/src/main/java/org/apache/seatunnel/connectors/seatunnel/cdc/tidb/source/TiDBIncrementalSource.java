@@ -19,7 +19,10 @@ package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source;
 
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
-import org.apache.seatunnel.api.source.SourceSplitEnumerator;
+import org.apache.seatunnel.api.source.SupportParallelism;
+import org.apache.seatunnel.api.table.catalog.CatalogTable;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.connectors.cdc.base.config.SourceConfig;
 import org.apache.seatunnel.connectors.cdc.base.dialect.DataSourceDialect;
 import org.apache.seatunnel.connectors.cdc.base.option.StartupMode;
@@ -27,13 +30,28 @@ import org.apache.seatunnel.connectors.cdc.base.option.StopMode;
 import org.apache.seatunnel.connectors.cdc.base.source.IncrementalSource;
 import org.apache.seatunnel.connectors.cdc.base.source.offset.OffsetFactory;
 import org.apache.seatunnel.connectors.cdc.debezium.DebeziumDeserializationSchema;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceConfig;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceConfigProvider;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.dialect.TiDBDialect;
 
-import java.io.Serializable;
+import org.tikv.common.TiConfiguration;
 
-public class TiDBIncrementalSource extends IncrementalSource {
+import javax.annotation.Nonnull;
+
+import java.util.List;
+
+public class TiDBIncrementalSource<T> extends IncrementalSource<T, TiDBSourceConfig>
+        implements SupportParallelism {
 
     static final String IDENTIFIER = "TIDB-CDC";
+
+    public TiDBIncrementalSource(
+            ReadonlyConfig options,
+            SeaTunnelDataType<SeaTunnelRow> dataType,
+            List<CatalogTable> catalogTables) {
+        super(options, dataType, catalogTables);
+    }
+
     /**
      * Returns a unique identifier among same factory interfaces.
      *
@@ -46,59 +64,40 @@ public class TiDBIncrementalSource extends IncrementalSource {
         return IDENTIFIER;
     }
 
-    /**
-     * Create source split enumerator, used to generate splits. This method will be called only once
-     * when start a source.
-     *
-     * @param enumeratorContext enumerator context.
-     * @return source split enumerator.
-     * @throws Exception when create enumerator failed.
-     */
-    @Override
-    public SourceSplitEnumerator createEnumerator(SourceSplitEnumerator.Context enumeratorContext)
-            throws Exception {
-        return null;
-    }
-
-    /**
-     * Create source split enumerator, used to generate splits. This method will be called when
-     * restore from checkpoint.
-     *
-     * @param enumeratorContext enumerator context.
-     * @param checkpointState checkpoint state.
-     * @return source split enumerator.
-     * @throws Exception when create enumerator failed.
-     */
-    @Override
-    public SourceSplitEnumerator restoreEnumerator(
-            SourceSplitEnumerator.Context enumeratorContext, Serializable checkpointState)
-            throws Exception {
-        return null;
-    }
-
     @Override
     public Option<StartupMode> getStartupModeOption() {
-        return null;
+        return TiDBSourceOptions.STARTUP_MODE;
     }
 
     @Override
     public Option<StopMode> getStopModeOption() {
-        return null;
+        return TiDBSourceOptions.STOP_MODE;
     }
 
     @Override
-    public SourceConfig.Factory createSourceConfigFactory(ReadonlyConfig config) {
-        return null;
+    public SourceConfig.Factory<TiDBSourceConfig> createSourceConfigFactory(
+            @Nonnull ReadonlyConfig config) {
+        TiDBSourceConfigProvider.Builder builder = new TiDBSourceConfigProvider.Builder();
+        builder.databaseName(config.get(TiDBSourceOptions.DATABASE_NAME));
+        builder.tableName(config.get(TiDBSourceOptions.TABLE_NAME));
+        builder.startupConfig(startupConfig);
+        builder.stopConfig(stopConfig);
+        TiConfiguration configuration =
+                TiDBSourceOptions.getTiConfiguration(
+                        config.get(TiDBSourceOptions.PD_ADDRESSES), config);
+
+        builder.tiConfiguration(configuration);
+        return builder;
     }
 
     @Override
-    public DebeziumDeserializationSchema createDebeziumDeserializationSchema(
+    public DebeziumDeserializationSchema<T> createDebeziumDeserializationSchema(
             ReadonlyConfig config) {
         return null;
     }
 
     @Override
-    public DataSourceDialect createDataSourceDialect(ReadonlyConfig config) {
+    public DataSourceDialect<TiDBSourceConfig> createDataSourceDialect(ReadonlyConfig config) {
         return new TiDBDialect();
     }
 

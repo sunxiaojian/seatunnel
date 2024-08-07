@@ -18,9 +18,16 @@
 package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch;
 
 import org.apache.seatunnel.connectors.cdc.base.source.reader.external.FetchTask;
+import org.apache.seatunnel.connectors.cdc.base.source.split.IncrementalSplit;
 import org.apache.seatunnel.connectors.cdc.base.source.split.SourceSplitBase;
 
 public class TiDBStreamFetchTask implements FetchTask<SourceSplitBase> {
+
+    private final IncrementalSplit incrementalSplit;
+
+    public TiDBStreamFetchTask(IncrementalSplit incrementalSplit) {
+        this.incrementalSplit = incrementalSplit;
+    }
     /**
      * Execute current task.
      *

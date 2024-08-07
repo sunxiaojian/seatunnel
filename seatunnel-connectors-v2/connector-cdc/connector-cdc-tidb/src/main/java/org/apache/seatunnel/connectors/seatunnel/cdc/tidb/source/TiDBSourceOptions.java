@@ -20,11 +20,14 @@ package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source;
 import org.apache.seatunnel.api.configuration.Options;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.configuration.SingleChoiceOption;
+import org.apache.seatunnel.connectors.cdc.base.option.SourceOptions;
+import org.apache.seatunnel.connectors.cdc.base.option.StartupMode;
+import org.apache.seatunnel.connectors.cdc.base.option.StopMode;
 
 import org.tikv.common.ConfigUtils;
 import org.tikv.common.TiConfiguration;
 
-import java.util.Map;
+import java.util.Arrays;
 
 /** TiDB source options */
 public class TiDBSourceOptions {
@@ -41,16 +44,29 @@ public class TiDBSourceOptions {
                     Options.key("table-name")
                             .stringType()
                             .noDefaultValue()
-                            .withDescription("Table name of the TiDB database to monitor.");
+                            .withDescription("Table name of the database to monitor.");
 
-    public static final SingleChoiceOption<String> SCAN_STARTUP_MODE =
-            (SingleChoiceOption<String>)
-                    Options.key("scan.startup.mode")
-                            .stringType()
-                            .defaultValue("initial")
+    public static final SingleChoiceOption<StartupMode> STARTUP_MODE =
+            Options.key(SourceOptions.STARTUP_MODE_KEY)
+                    .singleChoice(
+                            StartupMode.class,
+                            Arrays.asList(StartupMode.INITIAL, StartupMode.TIMESTAMP))
+                    .defaultValue(StartupMode.INITIAL)
+                    .withDescription(
+                            "Optional startup mode for CDC source, valid enumerations are "
+                                    + "\"initial\", \"earliest\", \"latest\", \"timestamp\"\n or \"specific\"");
+
+    public static final SingleChoiceOption<StopMode> STOP_MODE =
+            (SingleChoiceOption)
+                    Options.key(SourceOptions.STOP_MODE_KEY)
+                            .singleChoice(
+                                    StopMode.class,
+                                    Arrays.asList(
+                                            StopMode.LATEST, StopMode.SPECIFIC, StopMode.NEVER))
+                            .defaultValue(StopMode.NEVER)
                             .withDescription(
-                                    "Optional startup mode for TiDB CDC consumer, valid enumerations are "
-                                            + "\"initial\", \"latest-offset\"");
+                                    "Optional stop mode for CDC source, valid enumerations are "
+                                            + "\"never\", \"latest\" or \"specific\"");
 
     public static final SingleChoiceOption<String> PD_ADDRESSES =
             (SingleChoiceOption<String>)
@@ -88,9 +104,7 @@ public class TiDBSourceOptions {
                             .withDescription("TiKV GRPC batch scan concurrency");
 
     public static TiConfiguration getTiConfiguration(
-            final String pdAddrsStr, final Map<String, Object> options) {
-
-        final ReadonlyConfig configuration = ReadonlyConfig.fromMap(options);
+            final String pdAddrsStr, final ReadonlyConfig configuration) {
 
         final TiConfiguration tiConf = TiConfiguration.createDefault(pdAddrsStr);
         configuration.getOptional(TIKV_GRPC_TIMEOUT).ifPresent(tiConf::setTimeout);

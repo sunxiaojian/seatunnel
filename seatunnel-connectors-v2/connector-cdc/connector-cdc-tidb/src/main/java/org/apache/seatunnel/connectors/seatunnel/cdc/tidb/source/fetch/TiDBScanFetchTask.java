@@ -18,9 +18,16 @@
 package org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch;
 
 import org.apache.seatunnel.connectors.cdc.base.source.reader.external.FetchTask;
+import org.apache.seatunnel.connectors.cdc.base.source.split.SnapshotSplit;
 import org.apache.seatunnel.connectors.cdc.base.source.split.SourceSplitBase;
 
 public class TiDBScanFetchTask implements FetchTask<SourceSplitBase> {
+
+    private final SnapshotSplit snapshotSplit;
+
+    public TiDBScanFetchTask(SnapshotSplit snapshotSplit) {
+        this.snapshotSplit = snapshotSplit;
+    }
     /**
      * Execute current task.
      *

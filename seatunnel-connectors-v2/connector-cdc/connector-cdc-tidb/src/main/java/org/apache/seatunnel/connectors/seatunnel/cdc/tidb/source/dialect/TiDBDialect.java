@@ -22,6 +22,9 @@ import org.apache.seatunnel.connectors.cdc.base.source.enumerator.splitter.Chunk
 import org.apache.seatunnel.connectors.cdc.base.source.reader.external.FetchTask;
 import org.apache.seatunnel.connectors.cdc.base.source.split.SourceSplitBase;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.config.TiDBSourceConfig;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch.TiDBFetchTaskContext;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch.TiDBScanFetchTask;
+import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.fetch.TiDBStreamFetchTask;
 import org.apache.seatunnel.connectors.seatunnel.cdc.tidb.source.splitter.TiDBChunkSplitter;
 
 import io.debezium.relational.TableId;
@@ -75,7 +78,11 @@ public class TiDBDialect implements DataSourceDialect<TiDBSourceConfig> {
      */
     @Override
     public FetchTask<SourceSplitBase> createFetchTask(SourceSplitBase sourceSplitBase) {
-        return null;
+        if (sourceSplitBase.isSnapshotSplit()) {
+            return new TiDBScanFetchTask(sourceSplitBase.asSnapshotSplit());
+        } else {
+            return new TiDBStreamFetchTask(sourceSplitBase.asIncrementalSplit());
+        }
     }
 
     /**
@@ -87,6 +94,6 @@ public class TiDBDialect implements DataSourceDialect<TiDBSourceConfig> {
     @Override
     public FetchTask.Context createFetchTaskContext(
             SourceSplitBase sourceSplitBase, TiDBSourceConfig sourceConfig) {
-        return null;
+        return new TiDBFetchTaskContext();
     }
 }
