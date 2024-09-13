@@ -19,6 +19,7 @@ package org.apache.seatunnel.e2e.connector.iceberg;
 
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.common.utils.FileUtils;
+import org.apache.seatunnel.common.utils.JsonUtils;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mysql.testutils.MySqlContainer;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mysql.testutils.MySqlVersion;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mysql.testutils.UniqueDatabase;
@@ -278,6 +279,12 @@ public class IcebergSinkCDCIT extends TestSuiteBase implements TestResource {
                         () -> {
                             // copy iceberg to local
                             container.executeExtraCommands(containerExtendedFactory);
+                            Schema schema = loadIcebergSchema();
+                            log.info(
+                                    "iceberg_sink_table primary key "
+                                            + JsonUtils.toJsonString(schema.identifierFieldIds()));
+                            Assertions.assertEquals(
+                                    Boolean.TRUE, schema.identifierFieldIds().contains("id"));
                             List<Record> records = loadIcebergTable();
                             Assertions.assertEquals(4, records.size());
                             for (Record record : records) {
