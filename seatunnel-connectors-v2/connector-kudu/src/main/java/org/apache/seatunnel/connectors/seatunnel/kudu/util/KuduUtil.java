@@ -35,8 +35,6 @@ import org.apache.kudu.client.KuduScanToken;
 import org.apache.kudu.client.KuduTable;
 
 import lombok.extern.slf4j.Slf4j;
-import sun.security.krb5.Config;
-import sun.security.krb5.KrbException;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -94,13 +92,7 @@ public class KuduUtil {
 
     private static void reloadKrb5conf(String krb5conf) {
         System.setProperty(KRB5_CONF_KEY, krb5conf);
-        try {
-            Config.refresh();
-            KerberosName.resetDefaultRealm();
-        } catch (KrbException e) {
-            log.warn(
-                    "resetting default realm failed, current default realm will still be used.", e);
-        }
+        KerberosName.resetDefaultRealm();
     }
 
     private static KuduClient getKuduClientInternal(CommonConfig config) {
